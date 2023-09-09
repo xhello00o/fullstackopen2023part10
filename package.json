@@ -1,0 +1,22 @@
+{
+  "name": "reactnative",
+  "version": "1.0.0",
+  "description": "react native with expo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xhello00o/fullstackopen2023part10.git"
+  },
+  "keywords": [
+    "native"
+  ],
+  "author": "me",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xhello00o/fullstackopen2023part10/issues"
+  },
+  "homepage": "https://github.com/xhello00o/fullstackopen2023part10#readme"
+}
