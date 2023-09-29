@@ -1,53 +1,129 @@
-import { FlatList, View, StyleSheet } from 'react-native';
+import { FlatList, View, StyleSheet, Text } from 'react-native';
 import RepositoryItem from './RepositoryItem';
 import { useState, useEffect } from 'react'
+import { useQuery } from '@apollo/client';
+import { GET_ALL_REPOSITORIES } from '../graphql/queries';
+import Filter from './Filter';
+import React from 'react';
+import {useDebouncedCallback} from 'use-debounce'
+
+
 
 
 const styles = StyleSheet.create({
   separator: {
     height: 10,
   },
+
 });
 
 
 
-const ItemSeparator = () => <View style={styles.separator} />;
+export const ItemSeparator = () => <View style={styles.separator} />;
+export class RepositoryListContainer extends React.Component {
+  renderHeader = () => {
+    // this.props contains the component's props
+    const props = this.props;
+    const { refetch, selected, setSelected, search, setSearch,debounced } = props
 
-const RepositoryList = () => {
-  const [repositories, setRepositories] = useState();
+    // ...
 
-  const fetchRepositories = async () => {
-    // Replace the IP address part with your own IP address!
-    /*This is for Fetching HTTPserver*/
-    const response = await fetch('http://192.168.1.12:5000/api/repositories');
-    const json = await response.json();
-
-
-
-
-    console.log(json);
-
-    setRepositories(json);
+    return (
+      <Filter 
+          refetch={refetch} 
+          selected={selected} 
+          setSelected={setSelected} 
+          search={search}
+          setSearch={setSearch}
+          debounced={debounced}/>
+    );
   };
 
-  useEffect(() => {
-    fetchRepositories();
-  }, []);
+  render() {
+    const {repositories,handleEnd} = this.props
 
-  // Get the nodes from the edges array
-  const repositoryNodes = repositories
+    const repositoryNodes = repositories
     ? repositories.edges.map(edge => edge.node)
     : [];
+    return (
 
-
-  return (
-    <FlatList
+      <FlatList testID='repositoryContainer'
+      onEndReached={handleEnd}
+      ListHeaderComponent={this.renderHeader
+      }
       data={repositoryNodes}
       renderItem={RepositoryItem}
       keyExtractor={repo => repo.id}
       ItemSeparatorComponent={ItemSeparator}
-      // other props
+    // other props
     />
+    );
+  }
+}
+
+
+
+
+const RepositoryList = () => {
+  const { loading, data, error, refetch,fetchMore } = useQuery(GET_ALL_REPOSITORIES, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      orderBy: "CREATED_AT",
+      orderDirection: "DESC",
+      first:4
+    }
+  })
+  const [selected, setSelected] = useState("")
+  const [search, setSearch] = useState('')
+  const debounced = useDebouncedCallback((variables)=>{
+    console.log('debounced', variables)
+    refetch(variables)
+  },1500)
+
+  const handleFetchMore = () => {
+    console.log('fetching more')
+    const canFetchMore = !loading && data?.repositories.pageInfo.hasNextPage;
+
+    if (!canFetchMore) {
+      return;
+    }
+
+    fetchMore({
+      variables: {
+        after: data.repositories.pageInfo.endCursor,
+        first:2
+      },
+    });
+  };
+
+
+
+
+  console.log(loading, "loading list")
+
+
+  if (loading) {
+    return (
+      <Text> Loading...</Text>
+    )
+  }
+
+
+
+
+
+  return (
+
+    <RepositoryListContainer
+      handleEnd={handleFetchMore}
+      repositories={data.repositories}
+      refetch={refetch}
+      selected={selected}
+      setSelected={setSelected}
+      search={search}
+      setSearch={setSearch} 
+      debounced={debounced}
+      />
   );
 };
 

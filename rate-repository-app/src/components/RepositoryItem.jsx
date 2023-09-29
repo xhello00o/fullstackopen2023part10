@@ -1,15 +1,16 @@
-import { Text, View, Image, TouchableWithoutFeedback, StyleSheet } from "react-native"
+import { Text, View, Image, StyleSheet, Pressable } from "react-native"
 import theme from "../theme";
+import { Link } from "react-router-native";
 
 
 
 const cardHeaderStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    flexGrow: 1,
+    flexGrow: 0,
     alignItems:'flex-start',
-    paddingBottom:10
-
+    paddingBottom:10,
+    borderColor:'black',
   },
   avatar: {
     width: 45,
@@ -21,7 +22,9 @@ const cardHeaderStyles = StyleSheet.create({
   },
   infoContainer: {
     flexGrow: 1,
-    flex:1
+    flex:1,
+    borderWidth:3,
+    borderColor:'blue'
   },
   infoContainerSecondary: {
     flexGrow: 0,
@@ -53,7 +56,6 @@ const cardHeaderStyles = StyleSheet.create({
 });
 
 const CardHeader = ({ item }) => {
-  console.log(item)
   return (
     <View style={cardHeaderStyles.container}>
       <View style={cardHeaderStyles.avatarContainer}>
@@ -96,6 +98,7 @@ const cardFooterStyles = StyleSheet.create({
     flexDirection: 'row',
     flexGrow: 1,
     justifyContent: 'space-around',
+    paddingBottom:10
   },
   actionTouchable: {
     flexGrow: 0,
@@ -114,8 +117,8 @@ const cardFooterStyles = StyleSheet.create({
 
 const CardFooterAction = ({ title, children, ...props }) => {
   let numShown 
-  if ( children > 1000){
-    numShown = `${(children/1000).toFixed(1)} k `
+  if ( children >= 1000){
+    numShown = `${(children/1000).toFixed(1)} k`
   }
   else {
     numShown = children
@@ -154,22 +157,34 @@ const cardStyles = StyleSheet.create({
     alignItems: 'stretch',
     borderWidth: 1,
     backgroundColor: 'white',
-    padding: 10,
+    padding: 12,
   },
 });
 
+export const RepositoryItemContainer = ({item,children}) =>{
+  
+
+  return(
+    <View testID="repositoryItem" style={cardStyles.container}>
+      <CardHeader item={item} />
+      <CardFooter item={item} />
+      {children}
+    </View>
+  )
+}
+
 const RepositoryItem = ({ item }) => {
-  console.log(item)
 
 
   return (
-    <View style={cardStyles.container}>
-      <CardHeader item={item} />
-      <CardFooter item={item} />
-    </View>
-
-
+    <Pressable >
+      <Link to={`/${item.id}`}>
+      <RepositoryItemContainer item={item}/>
+    </Link>
+    </Pressable>
   )
 }
+
+
 
 export default RepositoryItem

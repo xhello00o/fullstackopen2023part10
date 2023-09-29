@@ -2,6 +2,10 @@ import { Text, TextInput, View, Pressable } from "react-native";
 import { StyleSheet } from 'react-native';
 import { Formik, useField } from 'formik';
 import * as yup from 'yup'
+import useSignIn from "../hooks/useSignin";
+import { Navigate, useNavigate } from "react-router-native";
+
+
 
 
 const styles = StyleSheet.create({
@@ -71,15 +75,15 @@ const styles = StyleSheet.create({
 
 
 
-const FormikTextInput = ({ name, ...props }) => {
+export const FormikTextInput = ({ name, ...props }) => {
   const [field, meta, helpers] = useField(name);
   const showError = meta.touched && meta.error;
 
 
 
-  console.log(meta.touched,"touching")
-  console.log(meta.error,"metaError")
-  console.log(showError,"errorsss")
+  //console.log(meta.touched,"touching")
+  //console.log(meta.error,"metaError")
+  //console.log(showError,"errorsss")
 
 
   return (
@@ -123,31 +127,63 @@ const BodyMassIndexForm = ({ onSubmit }) => {
     .string()
       .required('Password is required'),
   });
- 
 
-const SignIn = () => {
+export const SignInContainer = ({onSubmit}) => {
 
-    const initialValues = {
-        username: '',
-        password: '',
-      };
+  const initialValues = {
+    username: '',
+    password: '',
+  };
 
-      const onSubmit = values => {
-    
-          console.log(values);
-        
-      };
   return (
-    <View style={styles.container}> 
-        <Formik 
+    <Formik 
         initialValues={initialValues} 
         onSubmit={onSubmit}
         validationSchema={validationSchema}>
       {({ handleSubmit }) => <BodyMassIndexForm onSubmit={handleSubmit} />}
     </Formik>
+
+  )
+}
+ 
+
+const SignIn = () => {
+  const [mutate, {data,loading,error}] = useSignIn()
+  
+  console.log (data,error,loading) 
+
+
     
+
+      const onSubmit = async (values) => {
+        const { username, password } = values;
+        console.log (username, password)
     
+        try {
+            await mutate({
+            username: username,
+            password: password
+          }) 
+
+          
+        } catch (e) {
+          console.log(e,"error thrown");
+        }
+      };
+
+    if (data && !loading && !error) {
+        return (
+          <Navigate to={`/`} />
+        )
+      }
+
+      
         
+        
+      
+  return (
+    <View style={styles.container}>
+      <SignInContainer onSubmit={onSubmit}/>        
     </View>
     
   
